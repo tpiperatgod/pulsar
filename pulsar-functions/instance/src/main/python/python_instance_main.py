@@ -98,14 +98,16 @@ def main():
     args.function_details = args.function_details[:-1]
   json_format.Parse(args.function_details, function_details)
 
-  if function_details.autoAck is False and function_details.processingGuarantees == Function_pb2.ProcessingGuarantees.Value("ATMOST_ONCE") \
-          or function_details.processingGuarantees == Function_pb2.ProcessingGuarantees.Value("ATLEAST_ONCE"):
+  if function_details.autoAck is False and function_details.processingGuarantees == Function_pb2.ProcessingGuarantees.Value("ATMOST_ONCE"):
     print("When Guarantees == " + Function_pb2.ProcessingGuarantees.Name(function_details.processingGuarantees) + ", autoAck must be equal to true, "
           "This is a contradictory configuration, autoAck will be removed later,"
           "If you want not to automatically ack, please configure the processing guarantees as MANUAL."
           "This is a contradictory configuration, autoAck will be removed later," 
           "Please refer to PIP: https://github.com/apache/pulsar/issues/15560")
     sys.exit(1)
+  if function_details.processingGuarantees == Function_pb2.ProcessingGuarantees.Value("ATLEAST_ONCE"):
+    print("When Guarantees == " + Function_pb2.ProcessingGuarantees.Name(function_details.processingGuarantees) + ", will be replaced with EFFECTIVELY_ONCE.")
+    function_details.processingGuarantees = Function_pb2.ProcessingGuarantees.Value("EFFECTIVELY_ONCE")
   if os.path.splitext(str(args.py))[1] == '.whl':
     if args.install_usercode_dependencies:
       cmd = "pip install -t %s" % os.path.dirname(os.path.abspath(str(args.py)))
